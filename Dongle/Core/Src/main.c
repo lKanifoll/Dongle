@@ -153,18 +153,27 @@ void modbus_handler()
 	{
 	case MODBUS_READ_HOLDING_REG:
 		
-		if (((__builtin_bswap16(modbus_raw.modbus_frame.start_reg_address)) >= BEGIN_MODBUS_REG) 
-		 && ((__builtin_bswap16(modbus_raw.modbus_frame.start_reg_address)) <= END_MODBUS_REG))
+		switch (__builtin_bswap16(modbus_raw.modbus_frame.start_reg_address))
 		{
-			if (modbus_raw.modbus_frame.reg_count > 0)
-			{
-				
-			}
+		case reg_UUID:
+			
+			break;
+		case reg_UDID:
+			break;
+		case reg_SETTINGS:
+			break;
+		case reg_DATE:
+			break;
+		case reg_WEEK_PTS:
+			break;
+		case reg_CUSTOM_DAY_PTS:
+			break;
+			
+		default:
+			//return illigal data address
+			break;
 		}
-		else
-		{
-			//return ILLEGAL DATA ADDRESS
-		}
+
 		
 		
 		modbus_tx_complete = TRUE;
