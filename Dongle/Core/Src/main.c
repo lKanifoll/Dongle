@@ -43,10 +43,9 @@
 uint8_t tmp_buff[BUFFER_SIZE] ;
 uint8_t rx_buff[BUFFER_SIZE];
 uint8_t	tx_buff[BUFFER_SIZE];
-uint8_t	tx_frame[4] = { 0xAA, 0x01, 0x01 };
 uint8_t modbus_slave_cmd[11] = { 0xE4, 0x03, 0x06, 0xAE, 0x41, 0x56, 0x52, 0x43, 0x40, 0x49, 0xAD };
 uint8_t tmp_rmp[1] = { 0xAA };
-uint8_t tmp_size;
+uint8_t rx_size;
 //uint8_t modbus_master_cmd[BUFFER_SIZE];
 
 ring_buff_t ring_buffer;
@@ -117,8 +116,8 @@ int main(void)
   MX_TIM14_Init();
   /* USER CODE BEGIN 2 */
 	
-	tmp_size = 4;
-	tx_frame[3] = checksum8(tx_frame, tx_frame[1] + 2);
+	
+	
 	
 	HAL_GPIO_WritePin(DE_GPIO_Port, DE_Pin, GPIO_PIN_RESET);
 	//HAL_UART_Receive_DMA(&huart1, rx_485_buff, sizeof(rx_485_buff));
@@ -158,32 +157,38 @@ void modbus_handler()
 		case reg_UUID:
 			HAL_UART_Transmit(&huart2, read_UUID, sizeof(read_UUID), 500);
 			bzero(rx_buff, BUFFER_SIZE);
-			HAL_UART_Receive_IT(&huart2, rx_buff, 10);
+			rx_size = 10;
+			HAL_UART_Receive_IT(&huart2, rx_buff, rx_size);
 			break;
 		case reg_UDID:
 			HAL_UART_Transmit(&huart2, read_UDID, sizeof(read_UDID), 500);
 			bzero(rx_buff, BUFFER_SIZE);
-			HAL_UART_Receive_IT(&huart2, rx_buff, 20);
+			rx_size = 20;
+			HAL_UART_Receive_IT(&huart2, rx_buff, rx_size);
 			break;
 		case reg_SETTINGS:
 			HAL_UART_Transmit(&huart2, read_SETTINGS, sizeof(read_SETTINGS), 500);
 			bzero(rx_buff, BUFFER_SIZE);
-			HAL_UART_Receive_IT(&huart2, rx_buff, 15);
+			rx_size = 15;
+			HAL_UART_Receive_IT(&huart2, rx_buff, rx_size);
 			break;
 		case reg_DATE:
 			HAL_UART_Transmit(&huart2, read_DATE, sizeof(read_DATE), 500);
 			bzero(rx_buff, BUFFER_SIZE);
-			HAL_UART_Receive_IT(&huart2, rx_buff, 19);
+			rx_size = 19;
+			HAL_UART_Receive_IT(&huart2, rx_buff, rx_size);
 			break;
 		case reg_WEEK_PTS:
 			HAL_UART_Transmit(&huart2, read_WEEK_PTS, sizeof(read_WEEK_PTS), 500);
 			bzero(rx_buff, BUFFER_SIZE);
-			HAL_UART_Receive_IT(&huart2, rx_buff, 11);
+			rx_size = 11;
+			HAL_UART_Receive_IT(&huart2, rx_buff, rx_size);
 			break;
 		case reg_CUSTOM_DAY_PTS:
 			HAL_UART_Transmit(&huart2, read_CUSTOM_DAY_PTS, sizeof(read_CUSTOM_DAY_PTS), 500);
 			bzero(rx_buff, BUFFER_SIZE);
-			HAL_UART_Receive_IT(&huart2, rx_buff, 28);
+			rx_size = 28;
+			HAL_UART_Receive_IT(&huart2, rx_buff, rx_size);
 			break;
 		default:
 			//return illigal data address
@@ -203,8 +208,14 @@ void modbus_handler()
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	//HAL_GPIO_WritePin(DE_GPIO_Port, DE_Pin, GPIO_PIN_SET);
-	//HAL_UART_Transmit_DMA(&huart1, modbus_slave_cmd, sizeof(modbus_slave_cmd));
+	if (checksum8(rx_buff, (rx_size - 1)) ==  rx_buff[rx_size])
+	{
+		
+	}
+	
+	
+	HAL_GPIO_WritePin(DE_GPIO_Port, DE_Pin, GPIO_PIN_SET);
+	HAL_UART_Transmit_DMA(&huart1, modbus_slave_cmd, sizeof(modbus_slave_cmd));
 	//HAL_UART_Transmit_DMA(&huart2, tmp_buff, tmp_size);
 }
 
