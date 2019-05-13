@@ -1,5 +1,16 @@
 #include "modbus.h"
 
+uint8_t read_UUID[4]			= { 0xAA, 0x01, 0x01, 0xAC };
+uint8_t read_UDID[4]			= { 0xAA, 0x01, 0x07, 0xB2 };
+uint8_t read_SETTINGS[4]		= { 0xAA, 0x01, 0x08, 0xB3 };
+uint8_t read_DATE[4]			= { 0xAA, 0x01, 0x97, 0x42 };	
+uint8_t read_WEEK_PTS[4]		= { 0xAA, 0x01, 0x98, 0x43 };
+uint8_t read_CUSTOM_DAY_PTS[4]	= { 0xAA, 0x01, 0x99, 0x44 };
+
+uint8_t modbus_slave_address;
+uint8_t modbus_rx_complete;
+uint8_t modbus_tx_complete;
+uint8_t modbus_raw_byte_count;
 //--------------------------------------------------------------- MODBUS CRC16
 static const uint8_t table_crc_hi[] = {
 	0x00,
@@ -534,7 +545,6 @@ uint16_t modbus_rtu_calc_crc(const void* data, size_t size)
 	return ((uint16_t)crc_hi << 8) | crc_lo;
 }
 //---------------------------------------------------------------
-
 
 
 //--------------------------------------------------------------- UART CHECKSUM8 CRC

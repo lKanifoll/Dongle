@@ -29,10 +29,19 @@ extern "C" {
 #define count_WEEK_PTS					4
 #define count_CUSTOM_DAY_PTS			12
 	
-uint8_t modbus_slave_address;
-uint8_t modbus_rx_complete;
-uint8_t modbus_tx_complete;
-uint8_t modbus_raw_byte_count;
+	
+extern uint8_t read_UUID[4];
+extern uint8_t read_UDID[4];
+extern uint8_t read_SETTINGS[4];
+extern uint8_t read_DATE[4];	
+extern uint8_t read_WEEK_PTS[4];
+extern uint8_t read_CUSTOM_DAY_PTS[4];
+	
+extern uint8_t modbus_slave_address;
+extern uint8_t modbus_rx_complete;
+extern uint8_t modbus_tx_complete;
+extern uint8_t modbus_raw_byte_count;
+
 //------------------------------------------------------------------ for modbus rx 
 	
 typedef struct 
@@ -94,7 +103,7 @@ mb_10_tx_union_u modbus_10_raw;
 uint8_t checksum8(uint8_t * buff, uint8_t size);
 uint16_t modbus_rtu_calc_crc(const void* data, size_t size);
 
-void modbus_handler();
+
 	
 #ifdef __cplusplus
 }

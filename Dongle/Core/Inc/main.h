@@ -47,6 +47,18 @@ extern "C" {
 #define TRUE		1
 #define FALSE		0
 
+extern uint8_t rx_485_buff[BUFFER_SIZE];
+extern uint8_t tx_485_buff[BUFFER_SIZE];
+extern uint8_t modbus_master_cmd[30];
+extern uint8_t modbus_master_byte_cnt;
+	
+extern TIM_HandleTypeDef htim14;
+extern DMA_HandleTypeDef hdma_usart1_rx;
+extern DMA_HandleTypeDef hdma_usart1_tx;
+extern DMA_HandleTypeDef hdma_usart2_rx;
+extern DMA_HandleTypeDef hdma_usart2_tx;
+extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart2;
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/

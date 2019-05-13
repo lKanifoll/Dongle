@@ -54,14 +54,13 @@ uint16_t start_ptr;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-TIM_HandleTypeDef htim14;
-
-UART_HandleTypeDef huart1;
-UART_HandleTypeDef huart2;
-DMA_HandleTypeDef hdma_usart1_rx;
-DMA_HandleTypeDef hdma_usart1_tx;
-DMA_HandleTypeDef hdma_usart2_rx;
-DMA_HandleTypeDef hdma_usart2_tx;
+TIM_HandleTypeDef	htim14;
+UART_HandleTypeDef	huart1;
+UART_HandleTypeDef	huart2;
+DMA_HandleTypeDef	hdma_usart1_rx;
+DMA_HandleTypeDef	hdma_usart1_tx;
+DMA_HandleTypeDef	hdma_usart2_rx;
+DMA_HandleTypeDef	hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
 
@@ -74,6 +73,7 @@ static void MX_DMA_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_TIM14_Init(void);
+void modbus_handler();
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -142,13 +142,13 @@ int main(void)
 		  modbus_rx_complete = FALSE;
 		  modbus_handler();
 	  }
-
   }
   /* USER CODE END 3 */
 }
 /* USER CODE BEGIN 4 */
 void modbus_handler()
 {
+	modbus_tx_complete = TRUE;
 	switch (modbus_raw.modbus_frame.function)
 	{
 	case MODBUS_READ_HOLDING_REG:
@@ -156,47 +156,55 @@ void modbus_handler()
 		switch (__builtin_bswap16(modbus_raw.modbus_frame.start_reg_address))
 		{
 		case reg_UUID:
-			
+			HAL_UART_Transmit(&huart2, read_UUID, sizeof(read_UUID), 500);
+			bzero(rx_buff, BUFFER_SIZE);
+			HAL_UART_Receive_IT(&huart2, rx_buff, 10);
 			break;
 		case reg_UDID:
+			HAL_UART_Transmit(&huart2, read_UDID, sizeof(read_UDID), 500);
+			bzero(rx_buff, BUFFER_SIZE);
+			HAL_UART_Receive_IT(&huart2, rx_buff, 20);
 			break;
 		case reg_SETTINGS:
+			HAL_UART_Transmit(&huart2, read_SETTINGS, sizeof(read_SETTINGS), 500);
+			bzero(rx_buff, BUFFER_SIZE);
+			HAL_UART_Receive_IT(&huart2, rx_buff, 15);
 			break;
 		case reg_DATE:
+			HAL_UART_Transmit(&huart2, read_DATE, sizeof(read_DATE), 500);
+			bzero(rx_buff, BUFFER_SIZE);
+			HAL_UART_Receive_IT(&huart2, rx_buff, 19);
 			break;
 		case reg_WEEK_PTS:
+			HAL_UART_Transmit(&huart2, read_WEEK_PTS, sizeof(read_WEEK_PTS), 500);
+			bzero(rx_buff, BUFFER_SIZE);
+			HAL_UART_Receive_IT(&huart2, rx_buff, 11);
 			break;
 		case reg_CUSTOM_DAY_PTS:
+			HAL_UART_Transmit(&huart2, read_CUSTOM_DAY_PTS, sizeof(read_CUSTOM_DAY_PTS), 500);
+			bzero(rx_buff, BUFFER_SIZE);
+			HAL_UART_Receive_IT(&huart2, rx_buff, 28);
 			break;
-			
 		default:
 			//return illigal data address
 			break;
 		}
-
-		
-		
-		modbus_tx_complete = TRUE;
-		HAL_UART_Transmit(&huart2, tx_frame, tmp_size, 500);
-		HAL_UART_Receive_IT(&huart2, rx_buff, 10);
-		
 		break;
+		
 	case MODBUS_WRITE_MULTIPLY_REG:
 		modbus_rx_complete = FALSE;
 		break;
 	default:
-		//ILLEGAL FUNCTION
+		//return ILLEGAL FUNCTION
 		break;
 	}
-	
-	
 }
 
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	HAL_GPIO_WritePin(DE_GPIO_Port, DE_Pin, GPIO_PIN_SET);
-	HAL_UART_Transmit_DMA(&huart1, modbus_slave_cmd, sizeof(modbus_slave_cmd));
+	//HAL_GPIO_WritePin(DE_GPIO_Port, DE_Pin, GPIO_PIN_SET);
+	//HAL_UART_Transmit_DMA(&huart1, modbus_slave_cmd, sizeof(modbus_slave_cmd));
 	//HAL_UART_Transmit_DMA(&huart2, tmp_buff, tmp_size);
 }
 
