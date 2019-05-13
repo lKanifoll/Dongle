@@ -208,14 +208,23 @@ void modbus_handler()
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	if (checksum8(rx_buff, (rx_size - 1)) ==  rx_buff[rx_size])
+	if (checksum8(rx_buff, (rx_size - 1)) ==  rx_buff[rx_size - 1])
 	{
-		
+		//prepare modbus_slave_frame
+		switch(modbus_raw.modbus_frame.function)
+		{
+		case MODBUS_READ_HOLDING_REG:
+			// add cmd rx_size-4 (4 byte uart service data) checksum8
+			break;	
+		case MODBUS_WRITE_MULTIPLY_REG:
+			
+			break;
+		}
 	}
 	
 	
 	HAL_GPIO_WritePin(DE_GPIO_Port, DE_Pin, GPIO_PIN_SET);
-	HAL_UART_Transmit_DMA(&huart1, modbus_slave_cmd, sizeof(modbus_slave_cmd));
+	HAL_UART_Transmit_DMA(&huart1, modbus_03_raw.modbus_slave_frame, sizeof(modbus_03_raw.modbus_slave_frame));
 	//HAL_UART_Transmit_DMA(&huart2, tmp_buff, tmp_size);
 }
 
