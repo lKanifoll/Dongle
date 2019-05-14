@@ -43,13 +43,13 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-#define BUFFER_SIZE 30
+#define BUFFER_SIZE 40
 #define TRUE		1
 #define FALSE		0
 
 extern uint8_t rx_485_buff[BUFFER_SIZE];
 extern uint8_t tx_485_buff[BUFFER_SIZE];
-extern uint8_t modbus_master_cmd[30];
+extern uint8_t modbus_master_cmd[BUFFER_SIZE];
 extern uint8_t modbus_master_byte_cnt;
 	
 extern TIM_HandleTypeDef htim14;

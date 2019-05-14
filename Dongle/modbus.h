@@ -68,7 +68,7 @@ typedef struct
 	uint8_t		address;
 	uint8_t		function;
 	uint8_t		byte_count;   // __builtin_bswap16(16bit);
-	uint8_t		data_buff[BUFFER_SIZE]; 
+	uint16_t	data_buff[BUFFER_SIZE]; 
 } modbus_03_tx_frame_t; 
 
 typedef union 

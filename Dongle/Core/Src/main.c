@@ -23,7 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "ring_buffer.h"
+//#include "ring_buffer.h"
 #include "modbus.h"
 #include "flash.h"
 /* USER CODE END Includes */
@@ -40,16 +40,37 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-uint8_t tmp_buff[BUFFER_SIZE] ;
-uint8_t rx_buff[BUFFER_SIZE];
-uint8_t	tx_buff[BUFFER_SIZE];
-uint8_t modbus_slave_cmd[11] = { 0xE4, 0x03, 0x06, 0xAE, 0x41, 0x56, 0x52, 0x43, 0x40, 0x49, 0xAD };
-uint8_t tmp_rmp[1] = { 0xAA };
+
+//------------------------------------------------------------------ for rx from mcu
+typedef struct 
+{
+	uint8_t		prefix;
+	uint8_t		byte_count;
+	uint8_t		function;     
+	uint8_t		data_buff[BUFFER_SIZE]; 
+} rx_frame_t; 
+
+typedef union 
+{
+	rx_frame_t  rx_frame;
+	uint8_t		rx_raw_frame[BUFFER_SIZE];
+} rx_union_u; 
+
+rx_union_u rx_raw;
+
 uint8_t rx_size;
+//------------------------------------------------------------------
+
+//uint8_t tmp_buff[BUFFER_SIZE] ;
+uint16_t rx_buff[BUFFER_SIZE];
+//uint8_t	tx_buff[BUFFER_SIZE];
+//uint8_t modbus_slave_cmd[11] = { 0xE4, 0x03, 0x06, 0xAE, 0x41, 0x56, 0x52, 0x43, 0x40, 0x49, 0xAD };
+//uint8_t tmp_rmp[1] = { 0xAA };
+
 //uint8_t modbus_master_cmd[BUFFER_SIZE];
 
-ring_buff_t ring_buffer;
-uint16_t start_ptr;
+//ring_buff_t ring_buffer;
+//uint16_t start_ptr;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -115,15 +136,11 @@ int main(void)
   MX_USART2_UART_Init();
   MX_TIM14_Init();
   /* USER CODE BEGIN 2 */
-	
-	
-	
-	
-	HAL_GPIO_WritePin(DE_GPIO_Port, DE_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(DE_GPIO_Port, DE_Pin, GPIO_PIN_RESET);
 	//HAL_UART_Receive_DMA(&huart1, rx_485_buff, sizeof(rx_485_buff));
-	HAL_UART_Receive_DMA(&huart1, modbus_raw.modbus_master_frame, sizeof(modbus_raw.modbus_master_frame));
+  HAL_UART_Receive_DMA(&huart1, modbus_raw.modbus_master_frame, sizeof(modbus_raw.modbus_master_frame));
 	//HAL_UART_Receive_DMA(&huart2, tmp_buff, 10);
-	HAL_TIM_Base_Start_IT(&htim14);
+  HAL_TIM_Base_Start_IT(&htim14);
   /* USER CODE END 2 */
 	
   /* Infinite loop */
@@ -132,10 +149,6 @@ int main(void)
   {
     /* USER CODE END WHILE */
     /* USER CODE BEGIN 3 */
-	  
-	  //HAL_UART_Transmit_DMA(&huart2, tx_frame, tmp_size);
-	  //HAL_Delay(1000);
-	  
 	  if (modbus_rx_complete)
 	  {
 		  modbus_rx_complete = FALSE;
@@ -148,6 +161,8 @@ int main(void)
 void modbus_handler()
 {
 	modbus_tx_complete = TRUE;
+	bzero(rx_raw.rx_raw_frame, BUFFER_SIZE);
+	
 	switch (modbus_raw.modbus_frame.function)
 	{
 	case MODBUS_READ_HOLDING_REG:
@@ -155,40 +170,28 @@ void modbus_handler()
 		switch (__builtin_bswap16(modbus_raw.modbus_frame.start_reg_address))
 		{
 		case reg_UUID:
-			HAL_UART_Transmit(&huart2, read_UUID, sizeof(read_UUID), 500);
-			bzero(rx_buff, BUFFER_SIZE);
+			HAL_UART_Transmit_IT(&huart2, read_UUID, sizeof(read_UUID));			
 			rx_size = 10;
-			HAL_UART_Receive_IT(&huart2, rx_buff, rx_size);
 			break;
 		case reg_UDID:
 			HAL_UART_Transmit(&huart2, read_UDID, sizeof(read_UDID), 500);
-			bzero(rx_buff, BUFFER_SIZE);
 			rx_size = 20;
-			HAL_UART_Receive_IT(&huart2, rx_buff, rx_size);
 			break;
 		case reg_SETTINGS:
 			HAL_UART_Transmit(&huart2, read_SETTINGS, sizeof(read_SETTINGS), 500);
-			bzero(rx_buff, BUFFER_SIZE);
 			rx_size = 15;
-			HAL_UART_Receive_IT(&huart2, rx_buff, rx_size);
 			break;
 		case reg_DATE:
 			HAL_UART_Transmit(&huart2, read_DATE, sizeof(read_DATE), 500);
-			bzero(rx_buff, BUFFER_SIZE);
 			rx_size = 19;
-			HAL_UART_Receive_IT(&huart2, rx_buff, rx_size);
 			break;
 		case reg_WEEK_PTS:
 			HAL_UART_Transmit(&huart2, read_WEEK_PTS, sizeof(read_WEEK_PTS), 500);
-			bzero(rx_buff, BUFFER_SIZE);
 			rx_size = 11;
-			HAL_UART_Receive_IT(&huart2, rx_buff, rx_size);
 			break;
 		case reg_CUSTOM_DAY_PTS:
 			HAL_UART_Transmit(&huart2, read_CUSTOM_DAY_PTS, sizeof(read_CUSTOM_DAY_PTS), 500);
-			bzero(rx_buff, BUFFER_SIZE);
 			rx_size = 28;
-			HAL_UART_Receive_IT(&huart2, rx_buff, rx_size);
 			break;
 		default:
 			//return illigal data address
@@ -203,29 +206,49 @@ void modbus_handler()
 		//return ILLEGAL FUNCTION
 		break;
 	}
+	
+	HAL_UART_Receive_IT(&huart2, rx_raw.rx_raw_frame, rx_size);
 }
 
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	if (checksum8(rx_buff, (rx_size - 1)) ==  rx_buff[rx_size - 1])
+	if (huart == &huart1)
 	{
-		//prepare modbus_slave_frame
-		switch(modbus_raw.modbus_frame.function)
-		{
-		case MODBUS_READ_HOLDING_REG:
-			// add cmd rx_size-4 (4 byte uart service data) checksum8
-			break;	
-		case MODBUS_WRITE_MULTIPLY_REG:
-			
-			break;
-		}
+
 	}
-	
-	
-	HAL_GPIO_WritePin(DE_GPIO_Port, DE_Pin, GPIO_PIN_SET);
-	HAL_UART_Transmit_DMA(&huart1, modbus_03_raw.modbus_slave_frame, sizeof(modbus_03_raw.modbus_slave_frame));
-	//HAL_UART_Transmit_DMA(&huart2, tmp_buff, tmp_size);
+	else 
+	if (huart == &huart2)
+	{
+		if (checksum8(rx_raw.rx_raw_frame, (rx_size - 1)) ==  rx_raw.rx_raw_frame[rx_size - 1])
+		{
+			//prepare modbus_slave_frame
+			switch(modbus_raw.modbus_frame.function)
+			{
+			case MODBUS_READ_HOLDING_REG:	
+				modbus_03_raw.modbus_frame.address = modbus_raw.modbus_frame.address;
+				modbus_03_raw.modbus_frame.function = modbus_raw.modbus_frame.function;
+				modbus_03_raw.modbus_frame.byte_count = (rx_raw.rx_frame.byte_count - 1) * 2;  						// byte_count in mcu protocol count with command byte, that's why (byte_count - 1)
+				
+				for(uint8_t i = 0 ; i < (rx_raw.rx_frame.byte_count - 1) ; i++)
+				{
+					rx_buff[i] = rx_raw.rx_frame.data_buff[i];
+				}
+				
+				memcpy(modbus_03_raw.modbus_frame.data_buff, rx_buff, modbus_03_raw.modbus_frame.byte_count);
+				uint16_t mb_CRC = modbus_rtu_calc_crc(modbus_03_raw.modbus_slave_frame, modbus_03_raw.modbus_frame.byte_count + 3);
+				modbus_03_raw.modbus_slave_frame[modbus_03_raw.modbus_frame.byte_count + 3] = mb_CRC;
+				modbus_03_raw.modbus_slave_frame[modbus_03_raw.modbus_frame.byte_count + 4] = mb_CRC >> 8;
+				
+				break;	
+			case MODBUS_WRITE_MULTIPLY_REG:
+			
+				break;
+			}
+		}
+		HAL_GPIO_WritePin(DE_GPIO_Port, DE_Pin, GPIO_PIN_SET);
+		HAL_UART_Transmit_DMA(&huart1, modbus_03_raw.modbus_slave_frame, modbus_03_raw.modbus_frame.byte_count + 5);
+	}
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
@@ -380,7 +403,7 @@ static void MX_USART2_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART2_Init 2 */
-  SET_BIT(huart2.Instance->CR1, USART_CR1_IDLEIE);
+  //SET_BIT(huart2.Instance->CR1, USART_CR1_IDLEIE);
   /* USER CODE END USART2_Init 2 */
 
 }

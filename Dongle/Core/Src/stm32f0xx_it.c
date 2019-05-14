@@ -238,15 +238,15 @@ void USART2_IRQHandler(void)
   /* USER CODE END USART2_IRQn 0 */
   HAL_UART_IRQHandler(&huart2);
   /* USER CODE BEGIN USART2_IRQn 1 */
-	if ((READ_REG(huart2.Instance->ISR) & USART_ISR_IDLE) != RESET)
-	{
-		SET_BIT(huart2.Instance->ICR, USART_ICR_IDLECF);
-		if (modbus_tx_complete)
-		{
-			modbus_tx_complete = FALSE;
-			HAL_UART_RxCpltCallback(&huart2);			
-		}
-	}
+//	if ((READ_REG(huart2.Instance->ISR) & USART_ISR_IDLE) != RESET)
+//	{
+//		SET_BIT(huart2.Instance->ICR, USART_ICR_IDLECF);
+//		if (modbus_tx_complete)
+//		{
+//			modbus_tx_complete = FALSE;
+//			HAL_UART_RxCpltCallback(&huart2);			
+//		}
+//	}
   /* USER CODE END USART2_IRQn 1 */
 }
 
