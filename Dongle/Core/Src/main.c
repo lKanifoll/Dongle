@@ -59,10 +59,11 @@ typedef union
 rx_union_u rx_raw;
 
 uint8_t rx_size;
+uint8_t odd_flag;
 //------------------------------------------------------------------
 
 //uint8_t tmp_buff[BUFFER_SIZE] ;
-uint16_t rx_buff[BUFFER_SIZE];
+//uint16_t rx_buff[BUFFER_SIZE];
 //uint8_t	tx_buff[BUFFER_SIZE];
 //uint8_t modbus_slave_cmd[11] = { 0xE4, 0x03, 0x06, 0xAE, 0x41, 0x56, 0x52, 0x43, 0x40, 0x49, 0xAD };
 //uint8_t tmp_rmp[1] = { 0xAA };
@@ -174,23 +175,26 @@ void modbus_handler()
 			rx_size = 10;
 			break;
 		case reg_UDID:
-			HAL_UART_Transmit(&huart2, read_UDID, sizeof(read_UDID), 500);
+			HAL_UART_Transmit_IT(&huart2, read_UDID, sizeof(read_UDID));
 			rx_size = 20;
 			break;
 		case reg_SETTINGS:
-			HAL_UART_Transmit(&huart2, read_SETTINGS, sizeof(read_SETTINGS), 500);
+			HAL_UART_Transmit_IT(&huart2, read_SETTINGS, sizeof(read_SETTINGS));
 			rx_size = 15;
+			odd_flag = TRUE;
 			break;
 		case reg_DATE:
-			HAL_UART_Transmit(&huart2, read_DATE, sizeof(read_DATE), 500);
+			HAL_UART_Transmit_IT(&huart2, read_DATE, sizeof(read_DATE));
 			rx_size = 19;
+			odd_flag = TRUE;
 			break;
 		case reg_WEEK_PTS:
-			HAL_UART_Transmit(&huart2, read_WEEK_PTS, sizeof(read_WEEK_PTS), 500);
+			HAL_UART_Transmit_IT(&huart2, read_WEEK_PTS, sizeof(read_WEEK_PTS));
 			rx_size = 11;
+			odd_flag = TRUE;
 			break;
 		case reg_CUSTOM_DAY_PTS:
-			HAL_UART_Transmit(&huart2, read_CUSTOM_DAY_PTS, sizeof(read_CUSTOM_DAY_PTS), 500);
+			HAL_UART_Transmit_IT(&huart2, read_CUSTOM_DAY_PTS, sizeof(read_CUSTOM_DAY_PTS));
 			rx_size = 28;
 			break;
 		default:
@@ -225,17 +229,29 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 			//prepare modbus_slave_frame
 			switch(modbus_raw.modbus_frame.function)
 			{
-			case MODBUS_READ_HOLDING_REG:	
+			case MODBUS_READ_HOLDING_REG:
+				bzero(modbus_03_raw.modbus_frame.data_buff, BUFFER_SIZE);
 				modbus_03_raw.modbus_frame.address = modbus_raw.modbus_frame.address;
 				modbus_03_raw.modbus_frame.function = modbus_raw.modbus_frame.function;
-				modbus_03_raw.modbus_frame.byte_count = (rx_raw.rx_frame.byte_count - 1) * 2;  						// byte_count in mcu protocol count with command byte, that's why (byte_count - 1)
-				
-				for(uint8_t i = 0 ; i < (rx_raw.rx_frame.byte_count - 1) ; i++)
+				if (odd_flag) 
 				{
-					rx_buff[i] = rx_raw.rx_frame.data_buff[i];
+					modbus_03_raw.modbus_frame.byte_count = rx_raw.rx_frame.byte_count;
+					memcpy(modbus_03_raw.modbus_frame.data_buff, rx_raw.rx_frame.data_buff, modbus_03_raw.modbus_frame.byte_count - 1);
 				}
+				else
+				{
+					modbus_03_raw.modbus_frame.byte_count = rx_raw.rx_frame.byte_count - 1;   						// byte_count in mcu protocol count with command byte, that's why (byte_count - 1)
+					memcpy(modbus_03_raw.modbus_frame.data_buff, rx_raw.rx_frame.data_buff, modbus_03_raw.modbus_frame.byte_count);
+				}
+					
 				
-				memcpy(modbus_03_raw.modbus_frame.data_buff, rx_buff, modbus_03_raw.modbus_frame.byte_count);
+//				for(uint8_t i = 0 ; i < (rx_raw.rx_frame.byte_count - 1) ; i++)
+//				{
+//					rx_buff[i] = rx_raw.rx_frame.data_buff[i];
+//				}
+				
+				
+				
 				uint16_t mb_CRC = modbus_rtu_calc_crc(modbus_03_raw.modbus_slave_frame, modbus_03_raw.modbus_frame.byte_count + 3);
 				modbus_03_raw.modbus_slave_frame[modbus_03_raw.modbus_frame.byte_count + 3] = mb_CRC;
 				modbus_03_raw.modbus_slave_frame[modbus_03_raw.modbus_frame.byte_count + 4] = mb_CRC >> 8;
