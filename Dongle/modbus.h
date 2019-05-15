@@ -41,7 +41,7 @@ extern uint8_t modbus_slave_address;
 extern uint8_t modbus_rx_complete;
 extern uint8_t modbus_tx_complete;
 extern uint8_t modbus_raw_byte_count;
-
+extern uint16_t mb_CRC;
 //------------------------------------------------------------------ for modbus rx 
 	
 typedef struct 

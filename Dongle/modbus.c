@@ -11,6 +11,7 @@ uint8_t modbus_slave_address;
 uint8_t modbus_rx_complete;
 uint8_t modbus_tx_complete;
 uint8_t modbus_raw_byte_count;
+uint16_t mb_CRC;
 //--------------------------------------------------------------- MODBUS CRC16
 static const uint8_t table_crc_hi[] = {
 	0x00,
@@ -551,7 +552,7 @@ uint16_t modbus_rtu_calc_crc(const void* data, size_t size)
 uint8_t checksum8(uint8_t * buff, uint8_t size)
 {
 	uint8_t i;
-	uint8_t sum8;
+	uint8_t sum8 = 0;
 	for (i = 0; i < size; i++)
 	{
 		sum8 += buff[i];

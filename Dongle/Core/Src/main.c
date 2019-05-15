@@ -264,10 +264,11 @@ void modbus_handler()
 		case reg_WEEK_PTS:
 			tx_raw.tx_frame.byte_count = modbus_raw.modbus_frame.data_buff[0];  	// byte count is 12 but significant bytes is 11, + 1 byte cmd
 			tx_raw.tx_frame.function = 0xA8;
-			memcpy(tx_raw.tx_frame.data_buff, (modbus_raw.modbus_frame.data_buff + 1), modbus_raw.modbus_frame.data_buff[0] - 1);  // - 1 non significant byte
-			tx_raw.tx_frame.data_buff[modbus_raw.modbus_frame.data_buff[0] - 1] = checksum8(tx_raw.tx_raw_frame, tx_raw.tx_frame.byte_count + 2);
+			memcpy(tx_raw.tx_frame.data_buff, (modbus_raw.modbus_frame.data_buff + 1), tx_raw.tx_frame.byte_count - 1);   // - 1 non significant byte
+			tx_raw.tx_frame.data_buff[tx_raw.tx_frame.byte_count - 1] = checksum8(tx_raw.tx_raw_frame, tx_raw.tx_frame.byte_count + 2);
 			
 			HAL_UART_Transmit_IT(&huart2, tx_raw.tx_raw_frame, tx_raw.tx_frame.byte_count + 3);   // size with checksum8
+			
 			rx_size = 11;
 			odd_flag = TRUE;
 			break;
@@ -290,8 +291,8 @@ void modbus_handler()
 		//return ILLEGAL FUNCTION
 		break;
 	}
-	
 	HAL_UART_Receive_IT(&huart2, rx_raw.rx_raw_frame, rx_size);
+	
 }
 
 
@@ -316,16 +317,25 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 				modbus_03_raw.modbus_frame.function = modbus_raw.modbus_frame.function;
 				if (odd_flag) 
 				{
-					modbus_03_raw.modbus_frame.byte_count = rx_raw.rx_frame.byte_count;
-					memcpy(modbus_03_raw.modbus_frame.data_buff, rx_raw.rx_frame.data_buff, modbus_03_raw.modbus_frame.byte_count - 1);
+					if ((__builtin_bswap16(modbus_raw.modbus_frame.start_reg_address)) == reg_DATE)
+					{
+						modbus_03_raw.modbus_frame.byte_count = rx_raw.rx_frame.byte_count - 8;
+						memcpy(modbus_03_raw.modbus_frame.data_buff, rx_raw.rx_frame.data_buff + 8, modbus_03_raw.modbus_frame.byte_count - 1);
+					}
+					else
+					{
+						modbus_03_raw.modbus_frame.byte_count = rx_raw.rx_frame.byte_count;
+						memcpy(modbus_03_raw.modbus_frame.data_buff, rx_raw.rx_frame.data_buff, modbus_03_raw.modbus_frame.byte_count - 1);
+					}
 				}
 				else
 				{
 					modbus_03_raw.modbus_frame.byte_count = rx_raw.rx_frame.byte_count - 1;   						// byte_count in mcu protocol count with command byte, that's why (byte_count - 1)
 					memcpy(modbus_03_raw.modbus_frame.data_buff, rx_raw.rx_frame.data_buff, modbus_03_raw.modbus_frame.byte_count);
 				}
-			
-				uint16_t mb_CRC = modbus_rtu_calc_crc(modbus_03_raw.modbus_slave_frame, modbus_03_raw.modbus_frame.byte_count + 3);
+				odd_flag = FALSE;
+				
+				mb_CRC = modbus_rtu_calc_crc(modbus_03_raw.modbus_slave_frame, modbus_03_raw.modbus_frame.byte_count + 3);
 				modbus_03_raw.modbus_slave_frame[modbus_03_raw.modbus_frame.byte_count + 3] = mb_CRC;
 				modbus_03_raw.modbus_slave_frame[modbus_03_raw.modbus_frame.byte_count + 4] = mb_CRC >> 8;
 				
@@ -334,7 +344,15 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 				break;	
 				
 			case MODBUS_WRITE_MULTIPLY_REG:
-			
+				bzero(modbus_10_raw.modbus_slave_frame, 8);
+				modbus_10_raw.modbus_frame.address = modbus_raw.modbus_frame.address;
+				modbus_10_raw.modbus_frame.function = modbus_raw.modbus_frame.function;
+				modbus_10_raw.modbus_frame.start_reg_address = modbus_raw.modbus_frame.start_reg_address;
+				modbus_10_raw.modbus_frame.reg_count = modbus_raw.modbus_frame.reg_count;				
+				modbus_10_raw.modbus_frame.mb_CRC = modbus_rtu_calc_crc(modbus_10_raw.modbus_slave_frame, 6);
+				odd_flag = FALSE;
+				HAL_GPIO_WritePin(DE_GPIO_Port, DE_Pin, GPIO_PIN_SET);
+				HAL_UART_Transmit_DMA(&huart1, modbus_10_raw.modbus_slave_frame, 8);
 				break;
 			}
 		}
