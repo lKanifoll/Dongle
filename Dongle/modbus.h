@@ -22,13 +22,17 @@ extern "C" {
 #define reg_WEEK_PTS					0x0016
 #define reg_CUSTOM_DAY_PTS				0x001A
 	
-#define count_UUID						3
-#define count_UDID						8
-#define count_SETTINGS					6
-#define count_DATE						4
-#define count_WEEK_PTS					4
-#define count_CUSTOM_DAY_PTS			12
-	
+#define count_UUID						0x03
+#define count_UDID						0x08
+#define count_SETTINGS					0x06
+#define count_DATE						0x04
+#define count_WEEK_PTS					0x04
+#define count_CUSTOM_DAY_PTS			0x0C
+
+#define ILLEGAL_FUNCTION				0x01
+#define ILLEGAL_DATA_ADDRESS			0x02
+#define ILLEGAL_DATA					0x03
+#define ILLEGAL_CRC						0x08
 	
 extern uint8_t read_UUID[4];
 extern uint8_t read_UDID[4];
@@ -98,11 +102,30 @@ typedef union
 
 mb_10_tx_union_u modbus_10_raw;
 //------------------------------------------------------------------
+	
+//------------------------------------------------------------------ for modbus errors
+	
+typedef struct 
+{
+	uint8_t		address;
+	uint8_t		function;
+	uint8_t	    err_code;
+	uint16_t	mb_CRC;
+} modbus_err_frame_t; 
+
+typedef union 
+{
+	modbus_err_frame_t    modbus_err_frame;
+	uint8_t				  modbus_slave_err_frame[5];
+} mb_err_union_u; 
+
+mb_err_union_u modbus_err_raw;
+//------------------------------------------------------------------
 
 
 uint8_t checksum8(uint8_t * buff, uint8_t size);
 uint16_t modbus_rtu_calc_crc(const void* data, size_t size);
-
+	void modbus_error_handler(uint8_t error);
 
 	
 #ifdef __cplusplus

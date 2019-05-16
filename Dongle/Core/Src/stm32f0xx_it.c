@@ -219,10 +219,11 @@ void USART1_IRQHandler(void)
 				else
 				{
 					//return CRC ERROR
+					modbus_error_handler(ILLEGAL_CRC);
 				}
 			}
 		}
-		//HAL_UART_RxCpltCallback(&huart1);
+		
 		__HAL_DMA_ENABLE(&hdma_usart1_rx);
 	}
   /* USER CODE END USART1_IRQn 1 */

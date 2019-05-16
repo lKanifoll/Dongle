@@ -182,9 +182,9 @@ int main(void)
 /* USER CODE BEGIN 4 */
 void modbus_handler()
 {
-	modbus_tx_complete = TRUE;
 	bzero(rx_raw.rx_raw_frame, BUFFER_SIZE);
 	bzero(tx_raw.tx_raw_frame, BUFFER_SIZE);
+	
 	switch (modbus_raw.modbus_frame.function)
 	{
 	case MODBUS_READ_HOLDING_REG:
@@ -192,7 +192,6 @@ void modbus_handler()
 		switch (__builtin_bswap16(modbus_raw.modbus_frame.start_reg_address))
 		{
 		case reg_UUID:
-			
 			HAL_UART_Transmit_IT(&huart2, read_UUID, sizeof(read_UUID));			
 			rx_size = 10;
 			break;
@@ -221,6 +220,7 @@ void modbus_handler()
 			break;
 		default:
 			//return illigal data address
+			modbus_error_handler(ILLEGAL_DATA_ADDRESS);
 			break;
 		}
 		break;
@@ -228,8 +228,7 @@ void modbus_handler()
 	case MODBUS_WRITE_MULTIPLY_REG:
 		
 		tx_raw.tx_frame.prefix = 0xAA;											// prefix is similar for all frames
-		
-		
+			
 		switch (__builtin_bswap16(modbus_raw.modbus_frame.start_reg_address))
 		{
 		case reg_UDID:
@@ -283,16 +282,28 @@ void modbus_handler()
 			break;
 		default:
 			//return illigal data address
+			modbus_error_handler(ILLEGAL_DATA_ADDRESS);
 			break;
 		}
 		
 		break;
 	default:
 		//return ILLEGAL FUNCTION
+		modbus_error_handler(ILLEGAL_FUNCTION);
 		break;
 	}
 	HAL_UART_Receive_IT(&huart2, rx_raw.rx_raw_frame, rx_size);
 	
+}
+
+void modbus_error_handler(uint8_t error)
+{
+	modbus_err_raw.modbus_err_frame.address = modbus_raw.modbus_frame.address;
+	modbus_err_raw.modbus_err_frame.function = modbus_raw.modbus_frame.function | 0x80;
+	modbus_err_raw.modbus_err_frame.err_code = error;
+	modbus_err_raw.modbus_err_frame.mb_CRC = modbus_rtu_calc_crc(modbus_err_raw.modbus_slave_err_frame, 3);
+	HAL_GPIO_WritePin(DE_GPIO_Port, DE_Pin, GPIO_PIN_SET);
+	HAL_UART_Transmit_DMA(&huart1, modbus_err_raw.modbus_slave_err_frame, 5);
 }
 
 
