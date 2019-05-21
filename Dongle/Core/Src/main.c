@@ -221,6 +221,7 @@ void modbus_handler()
 		default:
 			//return illigal data address
 			modbus_error_handler(ILLEGAL_DATA_ADDRESS);
+			rx_size = 0;
 			break;
 		}
 		break;
@@ -283,6 +284,7 @@ void modbus_handler()
 		default:
 			//return illigal data address
 			modbus_error_handler(ILLEGAL_DATA_ADDRESS);
+			rx_size = 0;
 			break;
 		}
 		
