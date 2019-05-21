@@ -290,9 +290,10 @@ void modbus_handler()
 	default:
 		//return ILLEGAL FUNCTION
 		modbus_error_handler(ILLEGAL_FUNCTION);
+		rx_size = 0;
 		break;
 	}
-	HAL_UART_Receive_IT(&huart2, rx_raw.rx_raw_frame, rx_size);
+	if (rx_size) HAL_UART_Receive_IT(&huart2, rx_raw.rx_raw_frame, rx_size);
 	
 }
 
