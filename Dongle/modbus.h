@@ -13,21 +13,21 @@ extern "C" {
 #define MODBUS_WRITE_EEPROM				0x43
 	
 #define BEGIN_MODBUS_REG				0x0000
-#define END_MODBUS_REG					0x0026
+#define END_MODBUS_REG					0x0056
 	
 #define reg_UUID						0x0001
-#define reg_UDID						0x0004
-#define reg_SETTINGS					0x000C
-#define reg_DATE						0x0012
-#define reg_WEEK_PTS					0x0016
-#define reg_CUSTOM_DAY_PTS				0x001A
+#define reg_UDID						0x0007
+#define reg_SETTINGS					0x0013
+#define reg_DATE						0x0024
+#define reg_WEEK_PTS					0x002B
+#define reg_CUSTOM_DAY_PTS				0x0032
 	
-#define count_UUID						0x03
-#define count_UDID						0x08
-#define count_SETTINGS					0x06
-#define count_DATE						0x04
-#define count_WEEK_PTS					0x04
-#define count_CUSTOM_DAY_PTS			0x0C
+#define count_UUID						0x06
+#define count_UDID						0x10
+#define count_SETTINGS					0x0B
+#define count_DATE						0x07
+#define count_WEEK_PTS					0x07
+#define count_CUSTOM_DAY_PTS			0x18
 
 #define ILLEGAL_FUNCTION				0x01
 #define ILLEGAL_DATA_ADDRESS			0x02

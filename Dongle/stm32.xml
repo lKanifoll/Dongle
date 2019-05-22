@@ -27,9 +27,16 @@
   </MCUProperties>
   <BSPSourceFolderName>Device-specific files</BSPSourceFolderName>
   <MCUMakFile>stm32.mak</MCUMakFile>
-  <ReferencedFrameworks />
+  <ReferencedFrameworks>
+    <string>com.sysprogs.arm.stm32.hal</string>
+  </ReferencedFrameworks>
   <FrameworkProperties>
-    <Entries />
+    <Entries>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.stm32.hal_legacy</Key>
+        <Value>USE_HAL_LEGACY</Value>
+      </KeyValue>
+    </Entries>
   </FrameworkProperties>
   <TestFrameworkProperties>
     <Entries />
@@ -40,7 +47,7 @@
     <AllDependencies>
       <ProjectDependency>
         <RelativePath>Dongle.gpdsc</RelativePath>
-        <Timestamp>132010878922678238</Timestamp>
+        <Timestamp>132028946884864180</Timestamp>
       </ProjectDependency>
     </AllDependencies>
     <RootDirectory>
@@ -261,11 +268,11 @@
       <ImportedConfiguration>
         <Settings>
           <IncludeDirectories>
-            <string>C:\Workspace\Dongle\Core\Inc</string>
-            <string>C:\Workspace\Dongle\Drivers\CMSIS\Include</string>
-            <string>C:\Workspace\Dongle\Drivers\CMSIS\Device\ST\STM32F0xx\Include</string>
-            <string>C:\Workspace\Dongle\Drivers\STM32F0xx_HAL_Driver\Inc</string>
-            <string>C:\Workspace\Dongle\Drivers\STM32F0xx_HAL_Driver\Inc\Legacy</string>
+            <string>C:\Workspace\Dongle\Dongle\Core\Inc</string>
+            <string>C:\Workspace\Dongle\Dongle\Drivers\CMSIS\Include</string>
+            <string>C:\Workspace\Dongle\Dongle\Drivers\CMSIS\Device\ST\STM32F0xx\Include</string>
+            <string>C:\Workspace\Dongle\Dongle\Drivers\STM32F0xx_HAL_Driver\Inc</string>
+            <string>C:\Workspace\Dongle\Dongle\Drivers\STM32F0xx_HAL_Driver\Inc\Legacy</string>
           </IncludeDirectories>
           <PreprocessorMacros>
             <string>$$com.sysprogs.bspoptions.primary_memory$$_layout</string>
