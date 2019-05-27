@@ -16,11 +16,11 @@ extern "C" {
 #define END_MODBUS_REG					0x0026
 	
 #define reg_UUID						0x0001
-#define reg_UDID						0x0004
-#define reg_SETTINGS					0x000C
-#define reg_DATE						0x0012
-#define reg_WEEK_PTS					0x0016
-#define reg_CUSTOM_DAY_PTS				0x001A
+#define reg_UDID						0x0007
+#define reg_SETTINGS					0x0013
+#define reg_DATE						0x0024
+#define reg_WEEK_PTS					0x002B
+#define reg_CUSTOM_DAY_PTS				0x0032
 	
 #define count_UUID						0x03
 #define count_UDID						0x08

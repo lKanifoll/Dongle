@@ -43,7 +43,7 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-#define BUFFER_SIZE 40
+#define BUFFER_SIZE 50
 #define TRUE		1
 #define FALSE		0
 
@@ -59,6 +59,7 @@ extern DMA_HandleTypeDef hdma_usart2_rx;
 extern DMA_HandleTypeDef hdma_usart2_tx;
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
+	
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
