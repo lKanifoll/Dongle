@@ -186,7 +186,6 @@ void modbus_handler()
 	bzero(tx_raw.tx_raw_frame, BUFFER_SIZE);
 
 	
-	
 	switch (modbus_raw.modbus_frame.function)
 	{
 	case MODBUS_READ_HOLDING_REG:
@@ -313,9 +312,10 @@ void modbus_handler()
 		rx_size = 15;
 		HAL_UART_Receive(&huart2, rx_raw.rx_raw_frame, rx_size, 500);
 		rx_raw.rx_frame.data_buff[__builtin_bswap16(modbus_raw.modbus_frame.start_reg_address) - reg_SETTINGS] = __builtin_bswap16(modbus_raw.modbus_frame.reg_count);
-		
+		rx_raw.rx_frame.function = 0x0A;
 		rx_raw.rx_frame.data_buff[rx_size - 4] = checksum8(rx_raw.rx_raw_frame, rx_raw.rx_frame.byte_count + 2);
-		HAL_UART_Transmit_IT(&huart2, rx_raw.rx_raw_frame, rx_raw.rx_frame.byte_count + 3);
+		
+		HAL_UART_Transmit_IT(&huart2, rx_raw.rx_raw_frame, rx_size);
 	}
 			
 	break;
