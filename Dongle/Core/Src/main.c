@@ -184,52 +184,7 @@ void modbus_handler()
 {
 	bzero(rx_raw.rx_raw_frame, BUFFER_SIZE);
 	bzero(tx_raw.tx_raw_frame, BUFFER_SIZE);
-	
-	modbus_reg			= __builtin_bswap16(modbus_raw.modbus_frame.start_reg_address);
-	modbus_reg_count	= __builtin_bswap16(modbus_raw.modbus_frame.reg_count);
-	
-	if ((modbus_reg >= reg_UUID) && (modbus_reg < reg_UDID))
-	{
-		if (modbus_reg_count > count_UDID)
-		{
-			modbus_reg_count -= count_UDID;
-			// запрос udid с кол-вом count_UDID и копирование во временный буфер (HAL_UART_Receive подумать как принимать!!!)
-			// передача modbus_reg_count далее парсеру и сдвижка reg_UUID до reg_UDID
-		}
-		else
-		{
-			// запрос udid и копирование modbus_reg_count кол-ва необходимых байт во временный буфер
-			// передача modbus_reg_count в HAL_UART_Receive (по аналогии с rx_size)
-		}
-	}
-	
-	// ƒалее разбор по аналогии
-	
-	
-	if ((modbus_reg >= reg_UDID) && (modbus_reg < reg_SETTINGS))
-	{
-		
-	}
-	
-	if ((modbus_reg >= reg_SETTINGS) && (modbus_reg < reg_DATE))
-	{
-		
-	}
-	
-	if ((modbus_reg >= reg_DATE) && (modbus_reg < reg_WEEK_PTS))
-	{
-		
-	}
-	
-	if ((modbus_reg >= reg_WEEK_PTS) && (modbus_reg < reg_CUSTOM_DAY_PTS))
-	{
-		
-	}
-	
-	if ((modbus_reg >= reg_CUSTOM_DAY_PTS) && (modbus_reg < END_MODBUS_REG))
-	{
-		
-	}
+
 	
 	
 	switch (modbus_raw.modbus_frame.function)

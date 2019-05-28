@@ -51,8 +51,7 @@ extern uint8_t rx_485_buff[BUFFER_SIZE];
 extern uint8_t tx_485_buff[BUFFER_SIZE];
 extern uint8_t modbus_master_cmd[BUFFER_SIZE];
 extern uint8_t modbus_master_byte_cnt;
-	extern uint16_t modbus_reg;
-	extern uint16_t modbus_reg_count;
+
 	
 extern TIM_HandleTypeDef htim14;
 extern DMA_HandleTypeDef hdma_usart1_rx;
