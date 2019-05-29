@@ -361,36 +361,32 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 				modbus_03_raw.modbus_frame.address = modbus_raw.modbus_frame.address;
 				modbus_03_raw.modbus_frame.function = modbus_raw.modbus_frame.function;
 				
-				modbus_03_raw.modbus_frame.byte_count = (rx_raw.rx_frame.byte_count - 1) * 2;
+				//modbus_03_raw.modbus_frame.byte_count = (rx_raw.rx_frame.byte_count - 1) * 2;
 				//memcpy(modbus_03_raw.modbus_frame.data_buff, rx_raw.rx_frame.data_buff, modbus_03_raw.modbus_frame.byte_count);
 				
-				uint8_t y = 0;
 				
-				for (uint8_t i = 1; i < modbus_03_raw.modbus_frame.byte_count; i += 2)
+
+				if ((__builtin_bswap16(modbus_raw.modbus_frame.start_reg_address)) == reg_DATE)
 				{
-					modbus_03_raw.modbus_frame.data_buff[i] = rx_raw.rx_frame.data_buff[y];
-					y++;
+					uint8_t y = 8;
+					modbus_03_raw.modbus_frame.byte_count = (rx_raw.rx_frame.byte_count - 1) * 2 - 16;
+					for (uint8_t i = 1; i < modbus_03_raw.modbus_frame.byte_count; i += 2)
+					{
+						modbus_03_raw.modbus_frame.data_buff[i] = rx_raw.rx_frame.data_buff[y];
+						y++;
+					}
 				}
-				
-//				if (odd_flag) 
-//				{
-//					if ((__builtin_bswap16(modbus_raw.modbus_frame.start_reg_address)) == reg_DATE)
-//					{
-//						modbus_03_raw.modbus_frame.byte_count = rx_raw.rx_frame.byte_count - 8;
-//						memcpy(modbus_03_raw.modbus_frame.data_buff, rx_raw.rx_frame.data_buff + 8, modbus_03_raw.modbus_frame.byte_count - 1);
-//					}
-//					else
-//					{
-//						modbus_03_raw.modbus_frame.byte_count = rx_raw.rx_frame.byte_count;
-//						memcpy(modbus_03_raw.modbus_frame.data_buff, rx_raw.rx_frame.data_buff, modbus_03_raw.modbus_frame.byte_count - 1);
-//					}
-//				}
-//				else
-//				{
-//					modbus_03_raw.modbus_frame.byte_count = rx_raw.rx_frame.byte_count - 1;   						// byte_count in mcu protocol count with command byte, that's why (byte_count - 1)
-//					memcpy(modbus_03_raw.modbus_frame.data_buff, rx_raw.rx_frame.data_buff, modbus_03_raw.modbus_frame.byte_count);
-//				}
-//				odd_flag = FALSE;
+				else
+				{
+					uint8_t y = 0;
+					modbus_03_raw.modbus_frame.byte_count = (rx_raw.rx_frame.byte_count - 1) * 2;
+					for (uint8_t i = 1; i < modbus_03_raw.modbus_frame.byte_count; i += 2)
+					{
+						modbus_03_raw.modbus_frame.data_buff[i] = rx_raw.rx_frame.data_buff[y];
+						y++;
+					}
+				}
+
 				
 				mb_CRC = modbus_rtu_calc_crc(modbus_03_raw.modbus_slave_frame, modbus_03_raw.modbus_frame.byte_count + 3);
 				modbus_03_raw.modbus_slave_frame[modbus_03_raw.modbus_frame.byte_count + 3] = mb_CRC;
